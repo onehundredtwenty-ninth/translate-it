@@ -9,10 +9,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "translation_response")
 public class TranslationResponseEntity {
@@ -25,4 +27,9 @@ public class TranslationResponseEntity {
   private TranslationRequestEntity translationRequestEntity;
   @Column(name = "translated_string", nullable = false)
   private String translatedString;
+
+  public TranslationResponseEntity(TranslationRequestEntity translationRequestEntity, String translatedString) {
+    this.translationRequestEntity = translationRequestEntity;
+    this.translatedString = translatedString;
+  }
 }

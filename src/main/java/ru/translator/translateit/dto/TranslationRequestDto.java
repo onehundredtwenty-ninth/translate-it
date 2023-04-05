@@ -12,6 +12,6 @@ public class TranslationRequestDto {
   @NotBlank
   private String stringToTranslate;
   @NotBlank
-  @Pattern(regexp = "[a-zA-Z]*/[a-zA-Z]*")
+  @Pattern(regexp = "[a-zA-Z]*\\|[a-zA-Z]*")
   private String translationParams;
 }
