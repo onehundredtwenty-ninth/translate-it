@@ -31,14 +31,14 @@ public class TranslationServiceImpl implements TranslationService {
     var entity = TranslationRequestMapper.toEntity(translationRequestDto, ip, requestDateTime);
     translationRequestRepository.save(entity);
 
-    var sourceWords = translationRequestDto.getStringToTranslate().split("\\W+");
+    var sourceWords = translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]");
     var translationParams = translationRequestDto.getTranslationParams();
 
     var translatedString = new StringBuilder();
     Arrays.stream(sourceWords).forEach(s -> {
       var response = translatorClient.sentRequestToTranslator(s, translationParams);
 
-      var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\x20-\\x7e]", "");
+      var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\p{IsPunctuation} ]", "");
       var historyEntity = new TranslationHistoryEntity(entity, s, translatedText);
       translationHistoryRepository.save(historyEntity);
 
