@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.PersistenceException;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import ru.translator.translateit.model.TranslationHistoryEntity;
 import ru.translator.translateit.model.TranslationRequestEntity;
+import ru.translator.translateit.model.TranslationResponseEntity;
 
 @DataJpaTest
 class TranslationRequestRepositoryTest {
@@ -46,6 +49,50 @@ class TranslationRequestRepositoryTest {
     Assertions.assertThat(request.getId()).isNull();
     em.persist(request);
     Assertions.assertThat(request.getId()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("Сохранение корректного реквеста")
+  void saveCorrectTranslationRequestWithResponseTest() {
+    var request = TranslationRequestEntity.builder()
+        .stringToTranslate(commonEntity.getStringToTranslate())
+        .translationParams(commonEntity.getTranslationParams())
+        .ip(commonEntity.getIp())
+        .requestDateTime(commonEntity.getRequestDateTime())
+        .build();
+    em.persist(request);
+
+    var firstWordHistoryEntity = new TranslationHistoryEntity(request.getId(), "Hello",
+        "Здравствуй");
+    var secondWordHistoryEntity = new TranslationHistoryEntity(request.getId(), "world",
+        "мир");
+    var response = new TranslationResponseEntity(request.getId(), "Здравствуй мир");
+    em.persist(firstWordHistoryEntity);
+    em.persist(secondWordHistoryEntity);
+    em.persist(response);
+    em.refresh(request);
+
+    Assertions.assertThat(request.getTranslationResponseEntity())
+        .isNotNull();
+    Assertions.assertThat(request.getTranslationHistoryEntities())
+        .isNotNull();
+
+    SoftAssertions.assertSoftly(softAssertions -> {
+      softAssertions.assertThat(request.getTranslationResponseEntity().getId())
+          .isEqualTo(1L);
+
+      softAssertions.assertThat(request.getTranslationResponseEntity().getTranslatedString())
+          .isEqualTo("Здравствуй мир");
+
+      softAssertions.assertThat(request.getTranslationHistoryEntities())
+          .hasSize(2);
+
+      softAssertions.assertThat(request.getTranslationHistoryEntities().get(0).getSourceWord())
+          .isEqualTo("Hello");
+
+      softAssertions.assertThat(request.getTranslationHistoryEntities().get(0).getTranslatedWord())
+          .isEqualTo("Здравствуй");
+    });
   }
 
   static List<TranslationRequestEntity> saveIncorrectTranslationRequestTest() {
