@@ -32,10 +32,11 @@ public class TranslationServiceImpl implements TranslationService {
     var entity = TranslationRequestMapper.toEntity(translationRequestDto, ip, requestDateTime);
     translationRequestRepository.save(entity);
 
-    var sourceWords = translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]");
+    var sourceWords = Arrays.stream(translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]"))
+        .filter(s -> !s.isBlank()).collect(Collectors.toList());
     var translationParams = translationRequestDto.getTranslationParams();
 
-    var translatedWords = Arrays.stream(sourceWords).map(s -> {
+    var translatedWords = sourceWords.stream().map(s -> {
       var response = translatorClient.sentRequestToTranslator(s, translationParams);
 
       var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\p{IsPunctuation} ]", "");
