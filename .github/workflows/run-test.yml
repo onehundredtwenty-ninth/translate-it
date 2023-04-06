@@ -22,7 +22,7 @@ jobs:
         run: chmod +x ./mvnw
 
       - name: Build
-        run: ./mvnw compile
+        run: ./mvnw compile --no-transfer-progress
 
       - name: Run tests
-        run: ./mvnw test
+        run: ./mvnw test --no-transfer-progress
