@@ -2,6 +2,8 @@ package ru.translator.translateit.service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +38,14 @@ public class TranslationServiceImpl implements TranslationService {
         .filter(s -> !s.isBlank()).collect(Collectors.toList());
     var translationParams = translationRequestDto.getTranslationParams();
 
-    var translatedWords = sourceWords.parallelStream()
-        .map(s -> translateWord(s, translationParams, translationRequestEntity.getId()))
-        .collect(Collectors.toList());
+    var forkJoinPool = new ForkJoinPool(10);
+    var translatedWords = CompletableFuture.supplyAsync(() ->
+            sourceWords.parallelStream()
+                .map(s -> translateWord(s, translationParams, translationRequestEntity.getId()))
+                .collect(Collectors.toList()),
+        forkJoinPool
+    ).join();
+    forkJoinPool.shutdown();
 
     var responseEntity = new TranslationResponseEntity(translationRequestEntity.getId(),
         String.join(" ", translatedWords));
