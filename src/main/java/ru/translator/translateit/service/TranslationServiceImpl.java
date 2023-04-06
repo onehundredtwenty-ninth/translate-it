@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.translator.translateit.client.MyMemoryClient;
 import ru.translator.translateit.dto.TranslationRequestDto;
@@ -16,6 +17,7 @@ import ru.translator.translateit.repository.TranslationHistoryRepository;
 import ru.translator.translateit.repository.TranslationRequestRepository;
 import ru.translator.translateit.repository.TranslationResponseRepository;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -40,13 +42,14 @@ public class TranslationServiceImpl implements TranslationService {
       var response = translatorClient.sentRequestToTranslator(s, translationParams);
 
       var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\p{IsPunctuation} ]", "");
-      var historyEntity = new TranslationHistoryEntity(entity, s, translatedText);
+      var historyEntity = new TranslationHistoryEntity(entity.getId(), s, translatedText);
       translationHistoryRepository.save(historyEntity);
+      log.info("Saved history entity: " + historyEntity.getId());
 
       return translatedText;
     }).collect(Collectors.toList());
 
-    var responseEntity = new TranslationResponseEntity(entity, String.join(" ", translatedWords));
+    var responseEntity = new TranslationResponseEntity(entity.getId(), String.join(" ", translatedWords));
     translationResponseRepository.save(responseEntity);
 
     return new TranslationResponseDto(responseEntity.getTranslatedString());
