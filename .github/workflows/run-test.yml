@@ -19,10 +19,10 @@ jobs:
           java-version: '11'
 
       - name: Make mvnw executable
-        run: chmod +x ./mwnw
+        run: chmod +x ./mvnw
 
       - name: Build
-        run: ./mwnw compile
+        run: ./mvnw compile
 
       - name: Run tests
-        run: ./mwnw test
+        run: ./mvnw test
