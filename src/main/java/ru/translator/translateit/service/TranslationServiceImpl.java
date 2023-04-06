@@ -3,7 +3,6 @@ package ru.translator.translateit.service;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +18,6 @@ import ru.translator.translateit.repository.TranslationResponseRepository;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class TranslationServiceImpl implements TranslationService {
 
@@ -38,7 +36,7 @@ public class TranslationServiceImpl implements TranslationService {
         .filter(s -> !s.isBlank()).collect(Collectors.toList());
     var translationParams = translationRequestDto.getTranslationParams();
 
-    var translatedWords = sourceWords.stream().map(s -> {
+    var translatedWords = sourceWords.parallelStream().map(s -> {
       var response = translatorClient.sentRequestToTranslator(s, translationParams);
 
       var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\p{IsPunctuation} ]", "");
