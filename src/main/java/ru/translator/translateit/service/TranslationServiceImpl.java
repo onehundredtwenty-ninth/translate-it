@@ -29,27 +29,32 @@ public class TranslationServiceImpl implements TranslationService {
   @Override
   public TranslationResponseDto translate(TranslationRequestDto translationRequestDto, String ip,
       LocalDateTime requestDateTime) {
-    var entity = TranslationRequestMapper.toEntity(translationRequestDto, ip, requestDateTime);
-    translationRequestRepository.save(entity);
+    var translationRequestEntity = TranslationRequestMapper.toEntity(translationRequestDto, ip, requestDateTime);
+    translationRequestRepository.save(translationRequestEntity);
 
     var sourceWords = Arrays.stream(translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]"))
         .filter(s -> !s.isBlank()).collect(Collectors.toList());
     var translationParams = translationRequestDto.getTranslationParams();
 
-    var translatedWords = sourceWords.parallelStream().map(s -> {
-      var response = translatorClient.sentRequestToTranslator(s, translationParams);
+    var translatedWords = sourceWords.parallelStream()
+        .map(s -> translateWord(s, translationParams, translationRequestEntity.getId()))
+        .collect(Collectors.toList());
 
-      var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\p{IsPunctuation} ]", "");
-      var historyEntity = new TranslationHistoryEntity(entity.getId(), s, translatedText);
-      translationHistoryRepository.save(historyEntity);
-      log.info("Saved history entity: " + historyEntity.getId());
-
-      return translatedText;
-    }).collect(Collectors.toList());
-
-    var responseEntity = new TranslationResponseEntity(entity.getId(), String.join(" ", translatedWords));
+    var responseEntity = new TranslationResponseEntity(translationRequestEntity.getId(),
+        String.join(" ", translatedWords));
     translationResponseRepository.save(responseEntity);
 
     return new TranslationResponseDto(responseEntity.getTranslatedString());
+  }
+
+  private String translateWord(String word, String translationParams, long requestId) {
+    var response = translatorClient.sentRequestToTranslator(word, translationParams);
+
+    var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\p{IsPunctuation} ]", "");
+    var historyEntity = new TranslationHistoryEntity(requestId, word, translatedText);
+    translationHistoryRepository.save(historyEntity);
+    log.info("Saved history entity: " + historyEntity.getId());
+
+    return translatedText;
   }
 }
