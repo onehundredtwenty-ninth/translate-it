@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.persistence.PersistenceException;
-import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,16 +48,23 @@ class TranslationResponseRepositoryTest {
     em.persist(request);
 
     var response = new TranslationResponseEntity(request.getId(), commonResponseEntity.getTranslatedString());
-    Assertions.assertThat(response.getId()).isNull();
     em.persist(response);
-    Assertions.assertThat(response.getId()).isNotNull();
+    var refreshedResponse = em.persistFlushFind(response);
+
+    SoftAssertions.assertSoftly(softAssertions -> {
+      softAssertions.assertThat(refreshedResponse.getTranslationRequestId())
+          .isEqualTo(request.getId());
+
+      softAssertions.assertThat(refreshedResponse.getTranslatedString())
+          .isEqualTo(commonResponseEntity.getTranslatedString());
+    });
   }
 
   static List<TranslationResponseEntity> saveIncorrectTranslationResponseTest() {
     return List.of(
         new TranslationResponseEntity(commonResponseEntity.getTranslationRequestId(), null),
         new TranslationResponseEntity(commonResponseEntity.getTranslationRequestId(), ""),
-        new TranslationResponseEntity(10L, commonResponseEntity.getTranslatedString())
+        new TranslationResponseEntity(1000L, commonResponseEntity.getTranslatedString())
     );
   }
 
@@ -65,7 +72,7 @@ class TranslationResponseRepositoryTest {
   @DisplayName("Сохранение респонса с нарушением Constraint-а")
   @MethodSource
   void saveIncorrectTranslationResponseTest(TranslationResponseEntity entity) {
-    assertThatThrownBy(() -> em.persist(entity))
+    assertThatThrownBy(() -> em.persistAndFlush(entity))
         .isInstanceOf(PersistenceException.class)
         .hasMessage("org.hibernate.exception.ConstraintViolationException: could not execute statement");
   }

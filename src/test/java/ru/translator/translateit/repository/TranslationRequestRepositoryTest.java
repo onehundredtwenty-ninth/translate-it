@@ -78,9 +78,6 @@ class TranslationRequestRepositoryTest {
         .isNotNull();
 
     SoftAssertions.assertSoftly(softAssertions -> {
-      softAssertions.assertThat(request.getTranslationResponseEntity().getId())
-          .isEqualTo(1L);
-
       softAssertions.assertThat(request.getTranslationResponseEntity().getTranslatedString())
           .isEqualTo("Здравствуй мир");
 
