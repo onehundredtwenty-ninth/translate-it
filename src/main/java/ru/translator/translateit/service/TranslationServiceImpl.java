@@ -2,6 +2,7 @@ package ru.translator.translateit.service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,18 +35,17 @@ public class TranslationServiceImpl implements TranslationService {
     var sourceWords = translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]");
     var translationParams = translationRequestDto.getTranslationParams();
 
-    var translatedString = new StringBuilder();
-    Arrays.stream(sourceWords).forEach(s -> {
+    var translatedWords = Arrays.stream(sourceWords).map(s -> {
       var response = translatorClient.sentRequestToTranslator(s, translationParams);
 
       var translatedText = response.getResponseData().getTranslatedText().replaceAll("[\\p{IsPunctuation} ]", "");
       var historyEntity = new TranslationHistoryEntity(entity, s, translatedText);
       translationHistoryRepository.save(historyEntity);
 
-      translatedString.append(" ").append(translatedText);
-    });
+      return translatedText;
+    }).collect(Collectors.toList());
 
-    var responseEntity = new TranslationResponseEntity(entity, translatedString.toString());
+    var responseEntity = new TranslationResponseEntity(entity, String.join(" ", translatedWords));
     translationResponseRepository.save(responseEntity);
 
     return new TranslationResponseDto(responseEntity.getTranslatedString());
