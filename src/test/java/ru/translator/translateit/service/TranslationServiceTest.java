@@ -2,6 +2,7 @@ package ru.translator.translateit.service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
@@ -37,6 +38,10 @@ class TranslationServiceTest {
         Arguments.arguments(
             new TranslationRequestDto("слово", "ru|en"),
             "word"
+        ),
+        Arguments.arguments(
+            new TranslationRequestDto("слово, слово", "ru|en"),
+            "word word"
         )
     );
   }
@@ -76,7 +81,8 @@ class TranslationServiceTest {
           .isEqualTo(REQUEST_DATE_TIME.truncatedTo(ChronoUnit.SECONDS));
 
       softAssertions.assertThat(historyList)
-          .hasSize(translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]").length);
+          .hasSize((int) Arrays.stream(translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]"))
+              .filter(s -> !s.isBlank()).count());
 
       softAssertions.assertThat(translationRequestDto.getStringToTranslate())
           .contains(historyList.stream().map(TranslationHistoryEntity::getSourceWord)
