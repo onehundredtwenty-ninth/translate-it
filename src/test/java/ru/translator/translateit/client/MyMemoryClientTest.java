@@ -12,6 +12,7 @@ import java.util.List;
 import lombok.SneakyThrows;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,6 +24,7 @@ import ru.translator.translateit.dto.MyMemoryResponseData;
 import ru.translator.translateit.dto.MyMemoryTranslateResponseDto;
 
 @RestClientTest(MyMemoryClient.class)
+@DisplayName("Smoke интеграции с сервисом MyMemory")
 class MyMemoryClientTest {
 
   @Autowired
@@ -34,14 +36,14 @@ class MyMemoryClientTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  private MyMemoryTranslateResponseDto responseDto;
+  private MyMemoryTranslateResponseDto expectedResponseDto;
 
   @BeforeEach
-  public void setUp() {
+  public void prepareExpectedResponse() {
     var responseData = new MyMemoryResponseData();
     responseData.setMatch(1);
-    responseDto = new MyMemoryTranslateResponseDto();
-    responseDto.setResponseData(responseData);
+    expectedResponseDto = new MyMemoryTranslateResponseDto();
+    expectedResponseDto.setResponseData(responseData);
   }
 
   static List<Arguments> sendTranslateRequestTest() {
@@ -53,16 +55,17 @@ class MyMemoryClientTest {
 
   @ParameterizedTest
   @MethodSource
+  @DisplayName("Отправка корректного запроса на перевод сервису MyMemory")
   void sendTranslateRequestTest(String sourceWord, String translation, String translationParams)
       throws JsonProcessingException {
-    responseDto.getResponseData().setTranslatedText(sourceWord);
-    var responseDtoAsString = objectMapper.writeValueAsString(responseDto);
+    expectedResponseDto.getResponseData().setTranslatedText(sourceWord);
+    var responseDtoAsString = objectMapper.writeValueAsString(expectedResponseDto);
     server.expect(requestTo(getEncodedUrl(translation, translationParams)))
         .andRespond(withSuccess(responseDtoAsString, MediaType.APPLICATION_JSON));
 
     var response = client.sentRequestToTranslator(translation, translationParams);
     assertThat(response.getResponseData().getTranslatedText()).isEqualTo(
-        responseDto.getResponseData().getTranslatedText());
+        expectedResponseDto.getResponseData().getTranslatedText());
   }
 
   @SneakyThrows
