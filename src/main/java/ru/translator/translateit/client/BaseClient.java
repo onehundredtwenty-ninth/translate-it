@@ -31,7 +31,7 @@ public class BaseClient {
     try {
       return rest.exchange(path, HttpMethod.GET, requestEntity, responseClass, Objects.requireNonNull(parameters));
     } catch (HttpStatusCodeException e) {
-      return null;
+      throw new IllegalStateException("Не удалось получить ответ от сервиса перевода " + e.getResponseBodyAsString());
     }
   }
 

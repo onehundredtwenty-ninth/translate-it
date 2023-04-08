@@ -18,6 +18,12 @@ public class CommonExceptionHandler {
 
   @ExceptionHandler
   @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse handleIllegalStateException(final IllegalStateException e) {
+    return new ErrorResponse(HttpStatus.BAD_REQUEST, "IllegalStateException", e.getMessage(), LocalDateTime.now());
+  }
+
+  @ExceptionHandler
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
     return new ErrorResponse(HttpStatus.BAD_REQUEST, "Incorrectly made request.", e.getMessage(), LocalDateTime.now());
   }
