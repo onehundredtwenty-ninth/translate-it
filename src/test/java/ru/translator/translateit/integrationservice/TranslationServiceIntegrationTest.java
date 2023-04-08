@@ -1,5 +1,7 @@
 package ru.translator.translateit.integrationservice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -7,8 +9,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -22,35 +26,32 @@ import ru.translator.translateit.service.TranslationService;
 
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DisplayName("Smoke интеграция сервисы")
 class TranslationServiceIntegrationTest {
 
   private final EntityManager em;
   private final TranslationService translationService;
-  private static final String IP = "127.0.0.1";
-  private static final LocalDateTime REQUEST_DATE_TIME = LocalDateTime.now();
 
+  @SneakyThrows
   static List<Arguments> commonTranslationTest() {
-    return List.of(
-        Arguments.arguments(
-            new TranslationRequestDto("Returns a possibly parallel Stream with this collection as its.",
-                "en|ru"),
-            "Прибыль 6 можетбыть параллельный Трансляция при настоящим образца как свой"
-        ),
-        Arguments.arguments(
-            new TranslationRequestDto("слово", "ru|en"),
-            "word"
-        ),
-        Arguments.arguments(
-            new TranslationRequestDto("слово, слово", "ru|en"),
-            "word word"
-        )
-    );
+    var mapper = new ObjectMapper();
+    var testDataPath = Path.of(
+        System.getProperty("user.dir"),
+        "src/test/java/ru/translator/translateit/integrationservice/TranslationServiceIntegrationTestData.json"
+    ).toFile();
+    var testData = mapper.readValue(testDataPath, TranslationServiceIntegrationTestData[].class);
+
+    return Arrays.stream(testData)
+        .map(s -> Arguments.arguments(s.getTranslationRequestDto(), s.getIp(), s.getExpectedTranslation()))
+        .collect(Collectors.toList());
   }
 
   @ParameterizedTest
   @MethodSource
-  void commonTranslationTest(TranslationRequestDto translationRequestDto, String expectedTranslation) {
-    var responseDto = translationService.translate(translationRequestDto, IP, REQUEST_DATE_TIME);
+  @DisplayName("Перевод корректных запросов")
+  void commonTranslationTest(TranslationRequestDto translationRequestDto, String ip, String expectedTranslation) {
+    var requestDateTime = LocalDateTime.now();
+    var responseDto = translationService.translate(translationRequestDto, ip, requestDateTime);
     Assertions.assertThat(responseDto.getTranslatedString())
         .isEqualToIgnoringCase(expectedTranslation);
 
@@ -67,6 +68,11 @@ class TranslationServiceIntegrationTest {
         .getResultList();
 
     var responseEntity = em.find(TranslationResponseEntity.class, requestEntity.getId());
+    var expectedHistorySize = (int) Arrays
+        .stream(translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]"))
+        .filter(s -> !s.isBlank()).count();
+    var expectedSourceWords = historyList.stream().map(TranslationHistoryEntity::getSourceWord)
+        .collect(Collectors.toList());
 
     SoftAssertions.assertSoftly(softAssertions -> {
       softAssertions.assertThat(requestEntity.getStringToTranslate())
@@ -76,18 +82,16 @@ class TranslationServiceIntegrationTest {
           .isEqualTo(translationRequestDto.getTranslationParams());
 
       softAssertions.assertThat(requestEntity.getIp())
-          .isEqualTo(IP);
+          .isEqualTo(ip);
 
       softAssertions.assertThat(requestEntity.getRequestDateTime().truncatedTo(ChronoUnit.SECONDS))
-          .isEqualTo(REQUEST_DATE_TIME.truncatedTo(ChronoUnit.SECONDS));
+          .isEqualTo(requestDateTime.truncatedTo(ChronoUnit.SECONDS));
 
       softAssertions.assertThat(historyList)
-          .hasSize((int) Arrays.stream(translationRequestDto.getStringToTranslate().split("[\\p{IsPunctuation} ]"))
-              .filter(s -> !s.isBlank()).count());
+          .hasSize(expectedHistorySize);
 
       softAssertions.assertThat(translationRequestDto.getStringToTranslate())
-          .contains(historyList.stream().map(TranslationHistoryEntity::getSourceWord)
-              .collect(Collectors.toList()));
+          .contains(expectedSourceWords);
 
       softAssertions.assertThat(responseEntity.getTranslatedString())
           .isEqualToIgnoringCase(expectedTranslation);

@@ -1,0 +1,34 @@
+[
+  {
+    "translationRequestDto": {
+      "stringToTranslate": "Returns a possibly parallel Stream with this collection as its.",
+      "translationParams": "en|ru"
+    },
+    "ip": "127.0.0.1",
+    "expectedTranslation": "Прибыль 6 можетбыть параллельный Трансляция при настоящим образца как свой"
+  },
+  {
+    "translationRequestDto": {
+      "stringToTranslate": "слово",
+      "translationParams": "ru|en"
+    },
+    "ip": "255.255.255.244",
+    "expectedTranslation": "word"
+  },
+  {
+    "translationRequestDto": {
+      "stringToTranslate": "слово, слово",
+      "translationParams": "ru|en"
+    },
+    "ip": "255.255.8.244",
+    "expectedTranslation": "word word"
+  },
+  {
+    "translationRequestDto": {
+      "stringToTranslate": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+      "translationParams": "en|ru"
+    },
+    "ip": "127.0.0.1",
+    "expectedTranslation": "Lorem Loremipsum всегда просто dummy text amp желудка печать и Вёрстка industry Lorem Loremipsum будет был желудка industry s amp dummy text когданибудь с желудка 1500S когда вышеуказанный неизвестно принтер отвела 6 камбуз amp Тип и Скрэмлировано IT до марка 6 Тип образцом книга Она будет Sobrevivió говорил только 5 неодноговладельца но такжеи желудка прыгать в электронную Вёрстка осталось Посуществу безизменений Она удаляли Популярность в желудка 1960s при желудка предохранительный amp Letraset листов содержащую Lorem Loremipsum ПРОЕЗДЫ и Еще recently при desktop Издательство программноеобеспечение такиекак Aldus AdobePageMaker включая версии amp Lorem Loremipsum"
+  }
+]
