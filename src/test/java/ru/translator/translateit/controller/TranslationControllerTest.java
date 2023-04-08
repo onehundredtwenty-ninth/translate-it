@@ -23,6 +23,7 @@ import ru.translator.translateit.dto.TranslationResponseDto;
 import ru.translator.translateit.service.TranslationService;
 
 @WebMvcTest(controllers = TranslationController.class)
+@DisplayName("Smoke для контроллера TranslationController")
 class TranslationControllerTest {
 
   @Autowired
