@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -16,6 +17,7 @@ import ru.translator.translateit.model.TranslationHistoryEntity;
 import ru.translator.translateit.repository.TranslationHistoryRepository;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Smoke WordTranslationService")
 class WordTranslationServiceTest {
 
   @Mock
@@ -25,6 +27,7 @@ class WordTranslationServiceTest {
   private MyMemoryClient translatorClient;
 
   @Test
+  @DisplayName("Отправка запроса на перевод слова")
   void wordTranslationTest() {
     var wordTranslationService = new WordTranslationServiceImpl(translationHistoryRepository, translatorClient);
 

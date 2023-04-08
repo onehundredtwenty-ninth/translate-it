@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,6 +20,7 @@ import ru.translator.translateit.repository.TranslationRequestRepository;
 import ru.translator.translateit.repository.TranslationResponseRepository;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Smoke TranslationService")
 class TranslationServiceTest {
 
   @Mock
@@ -31,6 +33,7 @@ class TranslationServiceTest {
   private WordTranslationService wordTranslationService;
 
   @Test
+  @DisplayName("Отправка запроса на перевод")
   void translationTest() {
     var translationService = new TranslationServiceImpl(translationRequestRepository, translationResponseRepository,
         wordTranslationService);
