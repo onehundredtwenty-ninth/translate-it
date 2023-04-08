@@ -1,0 +1,34 @@
+[
+  {
+    "translationParams": "en|ru",
+    "ip": "127.0.0.1",
+    "requestDateTime": ""
+  },
+  {
+    "stringToTranslate": "Hello world",
+    "ip": "127.0.0.1",
+    "requestDateTime": ""
+  },
+  {
+    "stringToTranslate": "Hello world",
+    "translationParams": "en|ru",
+    "requestDateTime": ""
+  },
+  {
+    "stringToTranslate": "Hello world",
+    "translationParams": "en|ru",
+    "ip": "127.0.0.1"
+  },
+  {
+    "stringToTranslate": "",
+    "translationParams": "en|ru",
+    "ip": "127.0.0.1",
+    "requestDateTime": ""
+  },
+  {
+    "stringToTranslate": "Hello world",
+    "translationParams": "",
+    "ip": "127.0.0.1",
+    "requestDateTime": ""
+  }
+]

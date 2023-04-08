@@ -2,9 +2,15 @@ package ru.translator.translateit.repository;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.persistence.PersistenceException;
+import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,6 +26,7 @@ import ru.translator.translateit.model.TranslationRequestEntity;
 import ru.translator.translateit.model.TranslationResponseEntity;
 
 @DataJpaTest
+@DisplayName("Smoke репозитория TranslationRequest")
 class TranslationRequestRepositoryTest {
 
   @Autowired
@@ -92,41 +99,18 @@ class TranslationRequestRepositoryTest {
     });
   }
 
+  @SneakyThrows
   static List<TranslationRequestEntity> saveIncorrectTranslationRequestTest() {
-    return List.of(
-        TranslationRequestEntity.builder()
-            .translationParams(commonEntity.getTranslationParams())
-            .ip(commonEntity.getIp())
-            .requestDateTime(commonEntity.getRequestDateTime())
-            .build(),
-        TranslationRequestEntity.builder()
-            .stringToTranslate(commonEntity.getStringToTranslate())
-            .ip(commonEntity.getIp())
-            .requestDateTime(commonEntity.getRequestDateTime())
-            .build(),
-        TranslationRequestEntity.builder()
-            .stringToTranslate(commonEntity.getStringToTranslate())
-            .translationParams(commonEntity.getTranslationParams())
-            .requestDateTime(commonEntity.getRequestDateTime())
-            .build(),
-        TranslationRequestEntity.builder()
-            .stringToTranslate(commonEntity.getStringToTranslate())
-            .translationParams(commonEntity.getTranslationParams())
-            .ip(commonEntity.getIp())
-            .build(),
-        TranslationRequestEntity.builder()
-            .stringToTranslate("")
-            .translationParams(commonEntity.getTranslationParams())
-            .ip(commonEntity.getIp())
-            .requestDateTime(commonEntity.getRequestDateTime())
-            .build(),
-        TranslationRequestEntity.builder()
-            .stringToTranslate(commonEntity.getStringToTranslate())
-            .translationParams("")
-            .ip(commonEntity.getIp())
-            .requestDateTime(commonEntity.getRequestDateTime())
-            .build()
-    );
+    var mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    var testDataPath = Path.of(
+        System.getProperty("user.dir"),
+        "src/test/java/ru/translator/translateit/repository/TranslationRequestRepositoryTestData.json"
+    ).toFile();
+    var testData = mapper.readValue(testDataPath, TranslationRequestEntity[].class);
+
+    Arrays.stream(testData)
+        .forEach(s -> s.setRequestDateTime(s.getRequestDateTime() != null ? LocalDateTime.now() : null));
+    return Arrays.stream(testData).collect(Collectors.toList());
   }
 
   @ParameterizedTest
