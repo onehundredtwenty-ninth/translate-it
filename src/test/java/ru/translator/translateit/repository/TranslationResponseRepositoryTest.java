@@ -18,6 +18,7 @@ import ru.translator.translateit.model.TranslationRequestEntity;
 import ru.translator.translateit.model.TranslationResponseEntity;
 
 @DataJpaTest
+@DisplayName("Smoke репозитория TranslationResponseRepository")
 class TranslationResponseRepositoryTest {
 
   @Autowired
