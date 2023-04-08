@@ -2,7 +2,6 @@ package ru.translator.translateit.client;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -26,10 +25,12 @@ public class BaseClient {
 
   private <T> ResponseEntity<T> makeAndGetSendRequest(String path, @Nullable Map<String, Object> parameters,
       Class<T> responseClass) {
-    HttpEntity<?> requestEntity = new HttpEntity<>(null, defaultHeaders());
+    HttpEntity<?> requestEntity = new HttpEntity<>(defaultHeaders());
 
     try {
-      return rest.exchange(path, HttpMethod.GET, requestEntity, responseClass, Objects.requireNonNull(parameters));
+      return parameters != null
+          ? rest.exchange(path, HttpMethod.GET, requestEntity, responseClass, parameters)
+          : rest.exchange(path, HttpMethod.GET, requestEntity, responseClass);
     } catch (HttpStatusCodeException e) {
       throw new IllegalStateException(
           "Не удалось получить перевод от стороннего сервиса " + e.getResponseBodyAsString());
