@@ -1,6 +1,8 @@
 package ru.translator.translateit.controller;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +22,8 @@ public class TranslationController {
   @PostMapping("/translate")
   public TranslationResponseDto translate(@Valid @RequestBody TranslationRequestDto inputTranslationRequestDto,
       HttpServletRequest request) {
-    return translationService.translate(inputTranslationRequestDto, request.getRemoteAddr(),
-        LocalDateTime.now());
+    var requestDateTime = LocalDateTime.ofInstant(
+        Instant.ofEpochMilli(request.getSession().getLastAccessedTime()), TimeZone.getDefault().toZoneId());
+    return translationService.translate(inputTranslationRequestDto, request.getRemoteAddr(), requestDateTime);
   }
 }
